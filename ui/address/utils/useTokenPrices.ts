@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import BigNumber from 'bignumber.js';
 import React from 'react';
 
 import type { AddressTokenBalance } from 'types/api/address';
@@ -36,6 +37,32 @@ export function useTokenPriceMap() {
     });
     return map;
   }, [ data ]);
+}
+
+type PriceableToken = {
+  address_hash: string;
+  type: string;
+  decimals: string | null;
+  total_supply: string | null;
+  exchange_rate: string | null;
+  circulating_market_cap: string | null;
+};
+
+// Token lists/pages: fill a missing exchange_rate from Binance, and a missing circulating_market_cap with
+// on-chain total supply × that price (what the "On-chain market cap" column means). Values Blockscout
+// already has are kept. Returns a copy.
+export function applyTokenInfoPrice<T extends PriceableToken>(token: T, priceMap: Map<string, string>): T {
+  if (token.type !== 'ERC-20' || (token.exchange_rate && token.circulating_market_cap)) {
+    return token;
+  }
+  const price = token.exchange_rate || priceMap.get(token.address_hash.toLowerCase());
+  if (!price) {
+    return token;
+  }
+  const marketCap = token.circulating_market_cap || (token.total_supply ?
+    BigNumber(token.total_supply).div(BigNumber(10).pow(Number(token.decimals ?? 18))).times(price).dp(2).toString() :
+    null);
+  return { ...token, exchange_rate: price, circulating_market_cap: marketCap };
 }
 
 // Blockscout shows a token's USD value only from token.exchange_rate, which this chain leaves empty.

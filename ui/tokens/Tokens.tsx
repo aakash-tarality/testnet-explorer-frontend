@@ -1,9 +1,12 @@
 import { Box } from '@chakra-ui/react';
 import React from 'react';
 
+import type { TokenInfo } from 'types/api/token';
 import type { TokensSortingValue } from 'types/api/tokens';
+import type { AggregatedTokenInfo } from 'types/client/multichain-aggregator';
 
 import { apos } from 'toolkit/utils/htmlEntities';
+import { applyTokenInfoPrice, useTokenPriceMap } from 'ui/address/utils/useTokenPrices';
 import DataFetchAlert from 'ui/shared/DataFetchAlert';
 import DataListDisplay from 'ui/shared/DataListDisplay';
 import type { QueryWithPagesResult } from 'ui/shared/pagination/useQueryWithPages';
@@ -25,15 +28,23 @@ const Tokens = ({ query, onSortChange, sort, actionBar, description, hasActiveFi
 
   const { isError, isPlaceholderData, data, pagination } = query;
 
+  // Price / on-chain market cap from Binance for the TOKENS / TOKEN_ADDRESS tokens (Blockscout has none here).
+  const priceMap = useTokenPriceMap();
+  const items = React.useMemo(
+    () => (data?.items as Array<TokenInfo | AggregatedTokenInfo> | undefined)
+      ?.map((item) => applyTokenInfoPrice(item, priceMap)) as Array<TokenInfo> | Array<AggregatedTokenInfo> | undefined,
+    [ data?.items, priceMap ],
+  );
+
   if (isError) {
     return <DataFetchAlert/>;
   }
 
-  const content = data?.items ? (
+  const content = items ? (
     <>
       <Box hideFrom="lg">
         { description }
-        { data.items.map((item, index) => {
+        { items.map((item, index) => {
           const chainIds = 'chain_infos' in item ? Object.keys(item.chain_infos).join(',') : undefined;
 
           return (
@@ -50,7 +61,7 @@ const Tokens = ({ query, onSortChange, sort, actionBar, description, hasActiveFi
       <Box hideBelow="lg">
         { description }
         <TokensTable
-          items={ data.items }
+          items={ items }
           page={ pagination.page }
           isLoading={ isPlaceholderData }
           setSorting={ onSortChange }

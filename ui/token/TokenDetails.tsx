@@ -17,6 +17,7 @@ import useIsMounted from 'lib/hooks/useIsMounted';
 import { TOKEN_COUNTERS } from 'stubs/token';
 import { Link } from 'toolkit/chakra/link';
 import { Skeleton } from 'toolkit/chakra/skeleton';
+import { useTokenPriceMap } from 'ui/address/utils/useTokenPrices';
 import type { TokenTabs } from 'ui/pages/Token';
 import AppActionButton from 'ui/shared/AppActionButton/AppActionButton';
 import useAppActionData from 'ui/shared/AppActionButton/useAppActionData';
@@ -45,6 +46,7 @@ const TokenDetails = ({ tokenQuery }: Props) => {
   });
 
   const appActionData = useAppActionData(hash);
+  const priceMap = useTokenPriceMap();
 
   const changeUrlAndScroll = useCallback((tab: TokenTabs) => () => {
 
@@ -86,13 +88,18 @@ const TokenDetails = ({ tokenQuery }: Props) => {
   }
 
   const {
-    exchange_rate: exchangeRate,
+    exchange_rate: apiExchangeRate,
+    address_hash: addressHash,
     total_supply: totalSupply,
     circulating_market_cap: marketCap,
     decimals,
     symbol,
     type,
   } = tokenQuery.data || {};
+
+  // Blockscout has no rate on this chain; fall back to the Binance price for tokens listed in TOKENS / TOKEN_ADDRESS.
+  const exchangeRate = apiExchangeRate ||
+    (type === 'ERC-20' && addressHash ? priceMap.get(addressHash.toLowerCase()) : undefined);
 
   let totalSupplyValue;
   let totalSupplyValueFull;

@@ -99,7 +99,7 @@ const TopBarStats = () => {
           pointerEvents="none"
           userSelect="none"
         >
-          Testnet
+          Mainnet-Alpha
         </chakra.span>
         { (hasNativeCoinPrice || hasSecondaryCoinPrice) && hasGasInfo && <TextSeparator/> }
        { hasGasInfo && (

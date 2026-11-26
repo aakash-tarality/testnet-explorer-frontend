@@ -26,9 +26,10 @@ type Props = {
   className?: string;
 };
 
-const NetworkIcon = ({ className }: Props) => {
 
-  const iconSrc = useColorModeValue(config.UI.navigation.icon.default, config.UI.navigation.icon.dark || config.UI.navigation.icon.default);
+
+const NetworkIcon = ({ className }: Props) => {
+  const iconSrc = useColorModeValue('/icons/LogoLight.svg', '/icons/Logo.svg');
 
   return (
     <chakra.a
@@ -41,7 +42,7 @@ const NetworkIcon = ({ className }: Props) => {
       <Image
         w="120px"
         h="120px"
-        src="/icons/Logo.svg"
+        src={iconSrc}
         alt="nowa Logo"
         fallback={<IconFallback />}
         objectFit="contain"

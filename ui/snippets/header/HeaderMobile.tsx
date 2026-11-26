@@ -32,7 +32,7 @@ const HeaderMobile = ({ hideSearchButton, onGoToSearchResults }: Props) => {
       left={0}
       zIndex="sticky2"
       pt="1px"
-    height="130px"   >
+    >
       <Flex
         as="header"
         paddingX={3}
